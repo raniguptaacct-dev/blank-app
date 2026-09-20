@@ -17,20 +17,29 @@ if st.button("भविष्य जानें ✨"):
       if response.status_code == 200:
         res_data = response.json()
 
-        # यहाँ हम n8n के पूरे जंजाल में से सिर्फ काम का जवाब ढूंढ रहे हैं
+        # यह कोड हर तरह के डेटा से सिर्फ काम की बात ढूंढ लेगा
+        output_text = ""
         if isinstance(res_data, dict):
-          # अगर जवाब 'response' या 'output' के अंदर है
-          astrology_output = (
-              res_data.get("response")
-              or res_data.get("output")
-              or res_data.get("body", {}).get("response")
-              or str(res_data)
-          )
+          if "body" in res_data and isinstance(res_data["body"], dict):
+            body = res_data["body"]
+            output_text = (
+                body.get("response")
+                or body.get("output")
+                or body.get("text")
+                or str(body)
+            )
+          else:
+            output_text = (
+                res_data.get("response")
+                or res_data.get("output")
+                or res_data.get("text")
+                or str(res_data)
+            )
         else:
-          astrology_output = str(res_data)
+          output_text = str(res_data)
 
         st.success("भविष्यवाणी:")
-        st.write(astrology_output)
+        st.write(output_text)
       else:
         st.error(f"एरर आ गया: {response.status_code}")
 
@@ -38,4 +47,4 @@ if st.button("भविष्य जानें ✨"):
       st.error(f"कुछ गड़बड़ हो गई: {e}")
   else:
     st.warning("कृपया पहले अपना सवाल लिखें!")
-      
+    
