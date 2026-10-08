@@ -1,50 +1,42 @@
-import requests
+import google.generativeai as genai
 import streamlit as st
+
+st.set_page_config(page_title="AI Astrologer", page_icon="✨", layout="centered")
 
 st.title("✨ AI Astrologer - भविष्य जानें ✨")
 
-user_query = st.text_input("अपना सवाल यहाँ लिखें:")
+user_query = st.text_input(
+    "अपना सवाल यहाँ लिखें:",
+    placeholder="जैसे: मेरा आने वाला समय कैसा रहेगा?",
+)
 
 if st.button("भविष्य जानें ✨"):
   if user_query:
-    webhook_url = (
-        "https://rani-gupta.app.n8n.cloud/webhook/5c173db2-0142-4389-af48-18f13e346c7f"
-    )
-
     try:
-      response = requests.post(webhook_url, json={"question": user_query})
+      genai.configure(
+          api_key="AQ.Ab8RN6JIaJ7bB1qKTszmV9x_Y-FrtZirvgFLZAkXH_48vjshtw"
+      )
 
-      if response.status_code == 200:
-        res_data = response.json()
+      # यहाँ मॉडल का नाम अपडेट कर दिया गया है
+      model = genai.GenerativeModel("gemini-2.5-flash")
 
-        # यह कोड हर तरह के डेटा से सिर्फ काम की बात ढूंढ लेगा
-        output_text = ""
-        if isinstance(res_data, dict):
-          if "body" in res_data and isinstance(res_data["body"], dict):
-            body = res_data["body"]
-            output_text = (
-                body.get("response")
-                or body.get("output")
-                or body.get("text")
-                or str(body)
-            )
-          else:
-            output_text = (
-                res_data.get("response")
-                or res_data.get("output")
-                or res_data.get("text")
-                or str(res_data)
-            )
-        else:
-          output_text = str(res_data)
+      prompt = (
+          f"You are an expert AI astrologer. Give a detailed, positive, and"
+          f" inspiring astrological prediction for the following query: {user_query}"
+      )
 
-        st.success("भविष्यवाणी:")
-        st.write(output_text)
-      else:
-        st.error(f"एरर आ गया: {response.status_code}")
+      with st.spinner("भविष्य की गणना की जा रही है..."):
+        response = model.generate_content(prompt)
+        astrology_result = response.text
+
+      st.success("भविष्यवाणी:")
+      st.write(astrology_result)
 
     except Exception as e:
-      st.error(f"कुछ गड़बड़ हो गई: {e}")
+      st.error(
+          f"कुछ गड़बड़ हो गई है। कृपया API Key चेक करें या दोबारा कोशिश करें:"
+          f" {e}"
+      )
   else:
     st.warning("कृपया पहले अपना सवाल लिखें!")
     
